@@ -18,6 +18,7 @@ const unsplash = new Unsplash({
  * 更新壁纸方法
  */
 let updateWallpaper = (vueObject) => {
+    console.log("跟新壁纸");
     let promiseImgUrl = getRandomImgBackground();
     promiseImgUrl.then(vkey => {
         vueObject.us_src = vkey.url;
@@ -76,9 +77,9 @@ let downloadFile = (url, path, name) => {
                 jmMkdir.sync(path);
             }
             fs.writeFile(`${path}/${name}`, fileData, 'binary', err => {
-                if (err) {
-                } else {
+                if (!err) {
                     wallpaper.set(`${path}/${name}`);
+                    console.log("修改壁纸完成");
                 }
             });
         });
@@ -95,6 +96,7 @@ let copyImage = (src, target) => {
             let fileName = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}.${date.getMinutes()}.${date.getSeconds()}.${date.getMilliseconds()}.jpg`;
             fs.writeFile(`${target}/${fileName}`, data, function (err) {
                 if (!err) {
+                    console.log("下载壁纸成功");
                 }
             });
         }

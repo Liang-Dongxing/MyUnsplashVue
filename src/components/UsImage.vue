@@ -3,10 +3,11 @@
 </template>
 
 <script>
-    import UsPublic from "./UsPublic";
-
     export default {
         name: "UsImage",
+        props: {
+            UsPublic:Object
+        },
         data() {
             return {
                 us_src: '',
@@ -14,7 +15,7 @@
             }
         },
         created() {
-            UsPublic.updateWallpaper(this);
+            this.UsPublic.updateWallpaper(this);
         },
     }
 </script>
@@ -23,6 +24,10 @@
     .us_image {
         height: 100%;
         width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: -1;
     }
 
 </style>

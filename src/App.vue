@@ -1,17 +1,26 @@
 <template>
     <div class="us_main">
-        <UsImage/>
+        <UsImage v-bind:UsPublic="UsPublic"/>
+        <UsOperating/>
     </div>
 </template>
 
 <script>
+    import UsPublic from "./components/UsPublic";
     import UsImage from "./components/UsImage";
+    import UsOperating from "./components/UsOperating";
 
     export default {
         name: 'app',
         components: {
             UsImage,
+            UsOperating,
         },
+        data() {
+            return {
+                UsPublic
+            }
+        }
     }
 </script>
 
@@ -31,6 +40,6 @@
     .us_main {
         width: 100%;
         height: 100%;
-        /*-webkit-app-region: drag;*/
+        -webkit-app-region: drag;
     }
 </style>
