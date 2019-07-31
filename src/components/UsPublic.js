@@ -18,7 +18,7 @@ const unsplash = new Unsplash({
  * 更新壁纸方法
  */
 let updateWallpaper = (vueObject) => {
-    console.log("跟新壁纸");
+    console.log("更新壁纸");
     let promiseImgUrl = getRandomImgBackground();
     promiseImgUrl.then(vkey => {
         vueObject.us_src = vkey.url;
@@ -104,5 +104,9 @@ let copyImage = (src, target) => {
 };
 
 export default {
-    updateWallpaper
+    updateWallpaper,
+    copyImage,
+    IMG_PATH,
+    IMG_NAME,
+    SAVE_PATH,
 };

@@ -1,26 +1,16 @@
 <template>
-    <div class="us_main">
-        <UsImage v-bind:UsPublic="UsPublic"/>
-        <UsOperating/>
-    </div>
+    <UsMain/>
 </template>
 
 <script>
-    import UsPublic from "./components/UsPublic";
-    import UsImage from "./components/UsImage";
-    import UsOperating from "./components/UsOperating";
+    import UsMain from "./components/UsMain";
 
     export default {
         name: 'app',
         components: {
-            UsImage,
-            UsOperating,
+            UsMain
         },
-        data() {
-            return {
-                UsPublic
-            }
-        }
+
     }
 </script>
 
@@ -41,5 +31,9 @@
         width: 100%;
         height: 100%;
         -webkit-app-region: drag;
+    }
+
+    .ivu-btn-group,.ivu-modal {
+        -webkit-app-region: no-drag;
     }
 </style>
