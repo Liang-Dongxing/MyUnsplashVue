@@ -13,7 +13,6 @@ const unsplash = new Unsplash({
     applicationId: KEYS.accessKey,
     secret: KEYS.secretKey,
 });
-
 /**
  * 更新壁纸方法
  */
@@ -109,4 +108,5 @@ export default {
     IMG_PATH,
     IMG_NAME,
     SAVE_PATH,
+    ELECTRON,
 };

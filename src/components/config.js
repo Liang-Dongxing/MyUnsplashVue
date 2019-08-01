@@ -1,4 +1,5 @@
-const {electron, screen, ipcRenderer} = require("electron");
+const {ipcRenderer} = require("electron");
+const electron = require('electron').remote;
 const PropertiesReader = require('properties-reader');
 const proFilePath = 'src/assets/config.properties';
 const properties = PropertiesReader(proFilePath);
@@ -18,8 +19,8 @@ module.exports = {
         height: 540
     },
     LOCAL_SCREEN: {
-        width: screen.getPrimaryDisplay().size.width,
-        height: screen.getPrimaryDisplay().size.height
+        width: 1920,
+        height: 1080
     },
     IMG_PATH: "temp\\images",
     IMG_NAME: "TranscodedWallpaper.jpg",

@@ -24,7 +24,19 @@
                 设置
             </div>
             <div>
-
+                <Form v-bind:modal="us_form" label-position="top">
+                    <FormItem label="图片下载路径">
+                        <Col span="21">
+                            <Input v-model="us_form.path"/>
+                        </Col>
+                        <Col span="3">
+                            <Button v-on:click="us_imageSavePath">...</Button>
+                        </Col>
+                    </FormItem>
+                    <FormItem label="是否开启自动更换壁纸">
+                        <iSwitch v-model="us_form.switch" v-on:change="us_form_switch"/>
+                    </FormItem>
+                </Form>
             </div>
             <div slot="footer">
                 <Button type="default" size="default" v-on:click="us_modal_cancel">
@@ -47,7 +59,11 @@
             return {
                 us_src: '',
                 us_alt: '',
-                us_modal: false,
+                us_modal: true,
+                us_form: {
+                    path: UsPublic.SAVE_PATH,
+                    switch: UsPublic.PROPERTIES.get("replaceImg")
+                }
             }
         },
         created() {
@@ -63,12 +79,23 @@
             us_downloadImage() {
                 UsPublic.copyImage(`${UsPublic.IMG_PATH}\\${UsPublic.IMG_NAME}`, `${UsPublic.SAVE_PATH}`);
             },
+            us_imageSavePath() {
+                let path = UsPublic.ELECTRON.dialog.showOpenDialog({properties: ['openDirectory']});
+                path.then(value => {
+                    if (value.filePaths.length > 0) {
+                        this.us_form.path = value.filePaths[0].replace(/\\/g, "/");
+                    }
+                })
+            },
+            us_form_switch(status){
+
+            },
             us_modal_ok() {
                 this.us_modal = false;
             },
             us_modal_cancel() {
                 this.us_modal = false;
-            }
+            },
         }
     }
 </script>
@@ -104,5 +131,9 @@
         position: absolute;
         bottom: 10px;
         right: 10px;
+    }
+
+    .ivu-form .ivu-col .ivu-btn {
+        width: 100%;
     }
 </style>
