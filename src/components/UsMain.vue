@@ -1,6 +1,6 @@
 <template>
     <div class="us_main">
-        <img class="us_image" v-bind:src="us_src" v-bind:alt="us_alt">
+        <img class="us_image" v-bind:src="us_src" v-bind:alt="us_alt" v-on:load="us_imgLoad">
         <Layout>
             <Header>
                 <Button class="us_close" type="error" v-on:click="us_close" size="small" >
@@ -15,12 +15,12 @@
                             <Icon type="md-settings"/>
                         </Tooltip>
                     </Button>
-                    <Button type="primary" v-on:click="us_refreshImage">
+                    <Button type="primary" v-on:click="us_refreshImage" v-bind:disabled="us_disabled.refreshImage">
                         <Tooltip content="刷新壁纸" placement="top">
                             <Icon type="md-refresh"/>
                         </Tooltip>
                     </Button>
-                    <Button type="primary" v-on:click="us_downloadImage">
+                    <Button type="primary" v-on:click="us_downloadImage" v-bind:disabled="us_disabled.downloadImage" v-bind:loading="us_loading.downloadImage">
                         <Tooltip content="下载壁纸" placement="top-end">
                             <Icon type="md-download"/>
                         </Tooltip>
@@ -81,6 +81,13 @@
                 us_alt: '',
                 us_modal: false,
                 us_timer_id: 0,
+                us_disabled:{
+                    refreshImage:true,
+                    downloadImage:true
+                },
+                us_loading:{
+                    downloadImage:true
+                },
                 us_form: {
                     path: UsPublic.SAVE_PATH,
                     replaceImg: UsPublic.PROPERTIES.get("replaceImg"),
@@ -99,6 +106,7 @@
             }
         },
         created() {
+            this.$Spin.show();
             UsPublic.updateWallpaper(this);
             if (!this.us_form.replaceImg) {
                 this.us_form.disabled.replaceTime = true;
@@ -111,8 +119,18 @@
             us_setting() {
                 this.us_modal = true;
             },
+            us_imgLoad(){
+                this.$Spin.hide();
+                this.us_disabled.downloadImage=false;
+                this.us_loading.downloadImage=true;
+                this.us_disabled.refreshImage=false;
+            },
             us_refreshImage() {
+                this.$Spin.show();
+                this.us_disabled.downloadImage=true;
+                this.us_disabled.refreshImage=true;
                 UsPublic.updateWallpaper(this);
+                this.us_loading.downloadImage=false;
             },
             us_downloadImage() {
                 UsPublic.copyImage(`${UsPublic.IMG_PATH}\\${UsPublic.IMG_NAME}`, `${UsPublic.SAVE_PATH}`);
