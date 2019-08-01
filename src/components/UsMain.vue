@@ -18,8 +18,22 @@
                 </ButtonGroup>
             </Footer>
         </Layout>
-        <Modal v-model="us_modal" title="设置" v-on:on-ok="us_modal_ok" v-on:on-cancel="us_modal_cancel">
+        <Modal v-model="us_modal">
+            <div slot="header" class="ivu-modal-header-inner">
+                <Icon type="md-settings"/>
+                设置
+            </div>
+            <div>
 
+            </div>
+            <div slot="footer">
+                <Button type="default" size="default" v-on:click="us_modal_cancel">
+                    关闭
+                </Button>
+                <Button type="primary" size="default" v-on:click="us_modal_ok">
+                    确定
+                </Button>
+            </div>
         </Modal>
     </div>
 </template>
