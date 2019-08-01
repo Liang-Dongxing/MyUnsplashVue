@@ -2,18 +2,28 @@
     <div class="us_main">
         <img class="us_image" v-bind:src="us_src" v-bind:alt="us_alt">
         <Layout>
-            <Header></Header>
+            <Header>
+                <Button class="us_close" type="error" v-on:click="us_close" size="small" >
+                    <Icon type="md-close"/>
+                </Button>
+            </Header>
             <Content></Content>
             <Footer>
                 <ButtonGroup size="small" shape="circle">
                     <Button type="primary" v-on:click="us_setting">
-                        <Icon type="md-settings"/>
+                        <Tooltip content="下载壁纸" placement="top-start">
+                            <Icon type="md-settings"/>
+                        </Tooltip>
                     </Button>
                     <Button type="primary" v-on:click="us_refreshImage">
-                        <Icon type="md-refresh"/>
+                        <Tooltip content="刷新壁纸" placement="top">
+                            <Icon type="md-refresh"/>
+                        </Tooltip>
                     </Button>
                     <Button type="primary" v-on:click="us_downloadImage">
-                        <Icon type="md-download"/>
+                        <Tooltip content="下载壁纸" placement="top-end">
+                            <Icon type="md-download"/>
+                        </Tooltip>
                     </Button>
                 </ButtonGroup>
             </Footer>
@@ -27,14 +37,24 @@
                 <Form v-bind:modal="us_form" label-position="top">
                     <FormItem label="图片下载路径">
                         <Col span="21">
-                            <Input v-model="us_form.path"/>
+                            <Input v-model="us_form.path" size="default"/>
                         </Col>
                         <Col span="3">
-                            <Button v-on:click="us_imageSavePath">...</Button>
+                            <Button v-on:click="us_imageSavePath" size="default">...</Button>
                         </Col>
                     </FormItem>
                     <FormItem label="是否开启自动更换壁纸">
-                        <iSwitch v-model="us_form.switch" v-on:change="us_form_switch"/>
+                        <Col span="3">
+                            <iSwitch v-model="us_form.replaceImg" @on-change="us_form_replaceImg" size="default"/>
+                        </Col>
+                        <Col span="4">
+                            <InputNumber v-model="us_form.replaceTime" v-bind:disabled="us_form.disabled.replaceTime"/>
+                        </Col>
+                        <Col span="5">
+                            <Select v-model="us_form.replaceTimeOption" v-bind:disabled="us_form.disabled.replaceTimeOption">
+                                <Option v-for="item in us_form.timeOption" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                            </Select>
+                        </Col>
                     </FormItem>
                 </Form>
             </div>
@@ -59,15 +79,33 @@
             return {
                 us_src: '',
                 us_alt: '',
-                us_modal: true,
+                us_modal: false,
+                us_timer_id: 0,
                 us_form: {
                     path: UsPublic.SAVE_PATH,
-                    switch: UsPublic.PROPERTIES.get("replaceImg")
+                    replaceImg: UsPublic.PROPERTIES.get("replaceImg"),
+                    replaceTime: UsPublic.PROPERTIES.get("replaceTime"),
+                    replaceTimeOption: UsPublic.PROPERTIES.get("replaceTimeOption"),
+                    timeOption: [
+                        {value: 's', label: '秒'},
+                        {value: 'm', label: '分'},
+                        {value: 'h', label: '时'},
+                    ],
+                    disabled: {
+                        replaceTime: false,
+                        replaceTimeOption: false
+                    }
                 }
             }
         },
         created() {
             UsPublic.updateWallpaper(this);
+            if (!this.us_form.replaceImg) {
+                this.us_form.disabled.replaceTime = true;
+                this.us_form.disabled.replaceTimeOption = true;
+            } else {
+                this.us_timer();
+            }
         },
         methods: {
             us_setting() {
@@ -87,15 +125,59 @@
                     }
                 })
             },
-            us_form_switch(status){
-
+            us_form_replaceImg(status) {
+                if (status) {
+                    this.us_form.disabled.replaceTime = false;
+                    this.us_form.disabled.replaceTimeOption = false;
+                } else {
+                    this.us_form.disabled.replaceTime = true;
+                    this.us_form.disabled.replaceTimeOption = true;
+                }
             },
             us_modal_ok() {
+                let path = this.us_form.path;
+                if (path.length > 0) {
+                    UsPublic.PROPERTIES.set("savePath", path);
+                    UsPublic.SAVE_PATH = path
+                }
+                let switchValue = this.us_form.replaceImg;
+                if (switchValue) {
+                    UsPublic.PROPERTIES.set("replaceTime", this.us_form.replaceTime);
+                    UsPublic.PROPERTIES.set("replaceTimeOption", this.us_form.replaceTimeOption);
+                    UsPublic.PROPERTIES.set("replaceImg", switchValue);
+                } else {
+                    UsPublic.PROPERTIES.set("replaceImg", switchValue);
+                }
+                UsPublic.PROPERTIES.save(UsPublic.PRO_FILE_PATH);
+                this.us_timer();
                 this.us_modal = false;
             },
             us_modal_cancel() {
                 this.us_modal = false;
             },
+            us_close(){
+                UsPublic.IPC_RENDERER.sendSync('win-message', true);
+            },
+            us_timer() {
+                let replaceTime = UsPublic.PROPERTIES.get("replaceTime");
+                let replaceTimeOption = UsPublic.PROPERTIES.get("replaceTimeOption");
+                let time = 0;
+                switch (replaceTimeOption) {
+                    case "s":
+                        time += replaceTime * 1000;
+                        break;
+                    case "m":
+                        time += replaceTime * 60 * 1000;
+                        break;
+                    case "h":
+                        time += replaceTime * 60 * 60 * 1000;
+                        break;
+                }
+                clearInterval(this.us_timer_id);
+                this.us_timer_id = setInterval(() => {
+                    UsPublic.updateWallpaper(this);
+                }, time);
+            }
         }
     }
 </script>
@@ -116,6 +198,7 @@
 
     .ivu-layout-header, .ivu-layout-footer {
         padding: unset;
+        position: relative;
     }
 
     .ivu-layout-content {
@@ -124,13 +207,17 @@
 
     .ivu-layout-footer {
         height: 48px;
-        position: relative;
     }
 
     .ivu-btn-group {
         position: absolute;
         bottom: 10px;
         right: 10px;
+    }
+    .us_close{
+        position: absolute;
+        top: 0;
+        right: 0;
     }
 
     .ivu-form .ivu-col .ivu-btn {

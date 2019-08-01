@@ -33,7 +33,7 @@
         -webkit-app-region: drag;
     }
 
-    .ivu-btn-group,.ivu-modal {
+    .ivu-btn-group,.ivu-btn,.ivu-modal {
         -webkit-app-region: no-drag;
     }
 </style>

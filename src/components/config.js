@@ -19,8 +19,8 @@ module.exports = {
         height: 540
     },
     LOCAL_SCREEN: {
-        width: 1920,
-        height: 1080
+        width: electron.screen.getPrimaryDisplay().size.width,
+        height: electron.screen.getPrimaryDisplay().size.height,
     },
     IMG_PATH: "temp\\images",
     IMG_NAME: "TranscodedWallpaper.jpg",

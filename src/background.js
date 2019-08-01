@@ -1,6 +1,6 @@
 'use strict';
 
-import {app, protocol, BrowserWindow} from 'electron'
+import {app, protocol, BrowserWindow,ipcMain,Tray,Menu} from 'electron'
 import {
     createProtocol,
     installVueDevtools
@@ -24,7 +24,7 @@ function createWindow() {
         resizable: false,// 禁止改变窗口大小
         frame: false,// 无边框
         transparent: false,
-        icon: 'lib/common/icons/icon.png',
+        icon: 'src/assets/icon.png',
         titleBarStyle: 'hidden',
         webPreferences: {
             nodeIntegration: true
@@ -75,7 +75,16 @@ app.on('ready', async () => {
             console.error('Vue Devtools failed to install:', e.toString())
         }
     }
-    createWindow()
+    createWindow();
+    createTray();
+    ipcMain.on('win-message', (event, arg) => {
+        if (arg) {
+            win.hide();
+            event.returnValue = true;
+        } else {
+            event.returnValue = false;
+        }
+    })
 });
 
 // 在开发模式下根据父进程的请求干净地退出。
@@ -91,4 +100,16 @@ if (isDevelopment) {
             app.quit()
         })
     }
+}
+
+function createTray() {
+    let tray = new Tray('src/assets/icon.png');
+    const contextMenu = Menu.buildFromTemplate([
+        {label: '退出', type: 'normal', role: 'quit'},
+    ]);
+    tray.setToolTip('MyUnsplash');
+    tray.setContextMenu(contextMenu);
+    tray.on('click', () => {
+        win.show();
+    })
 }

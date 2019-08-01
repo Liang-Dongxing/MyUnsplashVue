@@ -109,4 +109,7 @@ export default {
     IMG_NAME,
     SAVE_PATH,
     ELECTRON,
+    PROPERTIES,
+    PRO_FILE_PATH,
+    IPC_RENDERER,
 };
