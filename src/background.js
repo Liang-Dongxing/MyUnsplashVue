@@ -1,6 +1,7 @@
 'use strict';
 
-import {app, protocol, BrowserWindow, ipcMain, Tray, Menu} from 'electron'
+import {app, protocol, BrowserWindow, ipcMain, Tray, Menu} from 'electron';
+import path from 'path';
 import {
     createProtocol,
     installVueDevtools
@@ -25,13 +26,12 @@ function createWindow() {
         resizable: false,// 禁止改变窗口大小
         frame: false,// 无边框
         transparent: false,
-        icon: 'src/assets/icon.png',
+        icon: path.join(__static,'icon.png'),
         titleBarStyle: 'hidden',
         webPreferences: {
             nodeIntegration: true
         }
     });
-
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         // 如果处于开发模式，请加载开发服务器的URL
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
@@ -105,7 +105,7 @@ if (isDevelopment) {
 }
 
 function createTray() {
-    tray = new Tray('./src/assets/icon.png');
+    tray = new Tray(path.join(__static,'icon.png'));
     const contextMenu = Menu.buildFromTemplate([
         {label: '退出', type: 'normal', role: 'quit'},
     ]);

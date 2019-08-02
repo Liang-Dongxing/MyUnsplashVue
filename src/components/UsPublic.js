@@ -1,7 +1,8 @@
 const {ipcRenderer} = require("electron");
 const electron = require('electron').remote;
 const PropertiesReader = require('properties-reader');
-const proFilePath = 'src/assets/config.properties';
+const path = require('path');
+const proFilePath = path.join(__static,'config.properties');
 const properties = PropertiesReader(proFilePath);
 let savePath = properties.get("savePath");
 if (savePath == null || savePath.length === 0) {
