@@ -27,6 +27,7 @@ module.exports = {
     SAVE_PATH: savePath,
     ELECTRON: electron,
     IPC_RENDERER: ipcRenderer,
+    IPC_MAIN: electron.ipcMain,
     PROPERTIES: properties,
     PRO_FILE_PATH: proFilePath,
 };

@@ -18,6 +18,7 @@
     "jm-mkdirs": "^0.0.1",
     "properties-reader": "^0.3.1",
     "pubsub-js": "^1.7.0",
+    "request": "^2.88.0",
     "unsplash-js": "^5.0.0",
     "vue": "^2.6.10",
     "wallpaper": "^4.4.1"

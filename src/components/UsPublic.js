@@ -1,8 +1,8 @@
-const {KEYS, LOCAL_SCREEN, IMG_PATH, IMG_NAME, MAIN_WINDOW, ELECTRON, PROPERTIES, PRO_FILE_PATH, IPC_RENDERER} = require('./config');
+const {KEYS, LOCAL_SCREEN, IMG_PATH, IMG_NAME, MAIN_WINDOW, ELECTRON, PROPERTIES, PRO_FILE_PATH, IPC_RENDERER, IPC_MAIN} = require('./config');
 let {SAVE_PATH} = require('./config');
 
 // App工具包
-const https = require('https');
+const request = require('request');
 const fs = require('fs');
 const wallpaper = require('wallpaper');
 const jmMkdir = require('jm-mkdirs');
@@ -65,24 +65,18 @@ let getWallpaper = (id) => {
  * @param name
  */
 let downloadFile = (url, path, name) => {
-    https.get(url, res => {
-        res.setEncoding('binary');
-        let fileData = '';
-        res.on('data', chunk => {
-            fileData += chunk;
-        });
-        res.on('end', () => {
+    request(url).on('response', (response) => {
+        response.on('end', () => {
             if (!fs.existsSync(path)) {
                 jmMkdir.sync(path);
             }
-            fs.writeFile(`${path}/${name}`, fileData, 'binary', err => {
-                if (!err) {
-                    wallpaper.set(`${path}/${name}`);
-                    console.log("修改壁纸完成");
-                }
-            });
+            wallpaper.set(`${path}/${name}`);
+            console.log("修改壁纸完成");
         });
-    });
+    }).on('error', (err) => {
+        console.log(err);
+    }).pipe(fs.createWriteStream(`${path}/${name}`));
+
 };
 
 let copyImage = (src, target) => {
@@ -112,4 +106,5 @@ export default {
     PROPERTIES,
     PRO_FILE_PATH,
     IPC_RENDERER,
+    IPC_MAIN,
 };

@@ -3,7 +3,7 @@
         <img class="us_image" v-bind:src="us_src" v-bind:alt="us_alt" v-on:load="us_imgLoad">
         <Layout>
             <Header>
-                <Button class="us_close" type="error" v-on:click="us_close" size="small" >
+                <Button class="us_close" type="error" v-on:click="us_close" size="small">
                     <Icon type="md-close"/>
                 </Button>
             </Header>
@@ -81,12 +81,12 @@
                 us_alt: '',
                 us_modal: false,
                 us_timer_id: 0,
-                us_disabled:{
-                    refreshImage:true,
-                    downloadImage:true
+                us_disabled: {
+                    refreshImage: true,
+                    downloadImage: true
                 },
-                us_loading:{
-                    downloadImage:true
+                us_loading: {
+                    downloadImage: true
                 },
                 us_form: {
                     path: UsPublic.SAVE_PATH,
@@ -119,18 +119,17 @@
             us_setting() {
                 this.us_modal = true;
             },
-            us_imgLoad(){
+            us_imgLoad() {
                 this.$Spin.hide();
-                this.us_disabled.downloadImage=false;
-                this.us_loading.downloadImage=true;
-                this.us_disabled.refreshImage=false;
+                this.us_disabled.downloadImage = false;
+                this.us_disabled.refreshImage = false;
+                this.us_loading.downloadImage = false;
             },
             us_refreshImage() {
                 this.$Spin.show();
-                this.us_disabled.downloadImage=true;
-                this.us_disabled.refreshImage=true;
+                this.us_disabled.downloadImage = true;
+                this.us_disabled.refreshImage = true;
                 UsPublic.updateWallpaper(this);
-                this.us_loading.downloadImage=false;
             },
             us_downloadImage() {
                 UsPublic.copyImage(`${UsPublic.IMG_PATH}\\${UsPublic.IMG_NAME}`, `${UsPublic.SAVE_PATH}`);
@@ -173,7 +172,7 @@
             us_modal_cancel() {
                 this.us_modal = false;
             },
-            us_close(){
+            us_close() {
                 UsPublic.IPC_RENDERER.sendSync('win-message', true);
             },
             us_timer() {
@@ -232,7 +231,8 @@
         bottom: 10px;
         right: 10px;
     }
-    .us_close{
+
+    .us_close {
         position: absolute;
         top: 0;
         right: 0;
