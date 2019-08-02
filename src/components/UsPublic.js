@@ -66,10 +66,17 @@ let getWallpaper = (id) => {
  */
 let downloadFile = (url, path, name) => {
     request(url).on('response', (response) => {
+        let size = parseInt(response.headers['content-length']);
+        let num = 0;
+        response.on('data', (chunk) => {
+            num += chunk.length;
+            console.log(parseInt((num / size) * 100));
+        })
         response.on('end', () => {
             if (!fs.existsSync(path)) {
                 jmMkdir.sync(path);
             }
+            console.log(response)
             wallpaper.set(`${path}/${name}`);
             console.log("修改壁纸完成");
         });
