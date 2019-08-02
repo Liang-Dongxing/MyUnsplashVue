@@ -90,9 +90,9 @@
                 },
                 us_form: {
                     path: UsPublic.SAVE_PATH,
-                    replaceImg: UsPublic.PROPERTIES.get("replaceImg"),
-                    replaceTime: UsPublic.PROPERTIES.get("replaceTime"),
-                    replaceTimeOption: UsPublic.PROPERTIES.get("replaceTimeOption"),
+                    replaceImg: UsPublic.properties.get("replaceImg"),
+                    replaceTime: UsPublic.properties.get("replaceTime"),
+                    replaceTimeOption: UsPublic.properties.get("replaceTimeOption"),
                     timeOption: [
                         {value: 's', label: '秒'},
                         {value: 'm', label: '分'},
@@ -107,7 +107,7 @@
         },
         created() {
             this.$Spin.show();
-            UsPublic.updateWallpaper(this);
+            this.updateWallpaper();
             if (!this.us_form.replaceImg) {
                 this.us_form.disabled.replaceTime = true;
                 this.us_form.disabled.replaceTimeOption = true;
@@ -123,19 +123,21 @@
                 this.$Spin.hide();
                 this.us_disabled.downloadImage = false;
                 this.us_disabled.refreshImage = false;
-                this.us_loading.downloadImage = false;
             },
             us_refreshImage() {
                 this.$Spin.show();
                 this.us_disabled.downloadImage = true;
                 this.us_disabled.refreshImage = true;
-                UsPublic.updateWallpaper(this);
+                this.us_loading.downloadImage = true;
+                this.updateWallpaper();
             },
             us_downloadImage() {
-                UsPublic.copyImage(`${UsPublic.IMG_PATH}\\${UsPublic.IMG_NAME}`, `${UsPublic.SAVE_PATH}`);
+                // 下载图片按钮
+                this.copyImage(`${UsPublic.IMG_PATH}\\${UsPublic.IMG_NAME}`, `${UsPublic.SAVE_PATH}`);
             },
             us_imageSavePath() {
-                let path = UsPublic.ELECTRON.dialog.showOpenDialog({properties: ['openDirectory']});
+                // 图片保存路径获取对话框
+                let path = UsPublic.electron.dialog.showOpenDialog({properties: ['openDirectory']});
                 path.then(value => {
                     if (value.filePaths.length > 0) {
                         this.us_form.path = value.filePaths[0].replace(/\\/g, "/");
@@ -152,20 +154,21 @@
                 }
             },
             us_modal_ok() {
+                // 点击ok按钮保存配置文件
                 let path = this.us_form.path;
                 if (path.length > 0) {
-                    UsPublic.PROPERTIES.set("savePath", path);
+                    UsPublic.properties.set("savePath", path);
                     UsPublic.SAVE_PATH = path
                 }
                 let switchValue = this.us_form.replaceImg;
                 if (switchValue) {
-                    UsPublic.PROPERTIES.set("replaceTime", this.us_form.replaceTime);
-                    UsPublic.PROPERTIES.set("replaceTimeOption", this.us_form.replaceTimeOption);
-                    UsPublic.PROPERTIES.set("replaceImg", switchValue);
+                    UsPublic.properties.set("replaceTime", this.us_form.replaceTime);
+                    UsPublic.properties.set("replaceTimeOption", this.us_form.replaceTimeOption);
+                    UsPublic.properties.set("replaceImg", switchValue);
                 } else {
-                    UsPublic.PROPERTIES.set("replaceImg", switchValue);
+                    UsPublic.properties.set("replaceImg", switchValue);
                 }
-                UsPublic.PROPERTIES.save(UsPublic.PRO_FILE_PATH);
+                UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
                 this.us_timer();
                 this.us_modal = false;
             },
@@ -173,11 +176,13 @@
                 this.us_modal = false;
             },
             us_close() {
-                UsPublic.IPC_RENDERER.sendSync('win-message', true);
+                // 根据渲染线程和主线程通信隐藏窗口
+                UsPublic.ipcRenderer.sendSync('win-message', true);
             },
             us_timer() {
-                let replaceTime = UsPublic.PROPERTIES.get("replaceTime");
-                let replaceTimeOption = UsPublic.PROPERTIES.get("replaceTimeOption");
+                // 根据配置文件生成定时任务
+                let replaceTime = UsPublic.properties.get("replaceTime");
+                let replaceTimeOption = UsPublic.properties.get("replaceTimeOption");
                 let time = 0;
                 switch (replaceTimeOption) {
                     case "s":
@@ -192,9 +197,74 @@
                 }
                 clearInterval(this.us_timer_id);
                 this.us_timer_id = setInterval(() => {
-                    UsPublic.updateWallpaper(this);
+                    this.updateWallpaper();
                 }, time);
-            }
+            },
+            updateWallpaper() {
+                // 更新壁纸
+                let promiseImgUrl = this.getRandomImgBackground();
+                promiseImgUrl.then(vkey => {
+                    this.us_src = vkey.url;
+                    this.us_alt = vkey.alt;
+
+                    let imgPathUrl = new URL(vkey.url);
+                    imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
+                    imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
+                    this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
+                });
+            },
+            async getRandomImgBackground() {
+                // 随机获取图片
+                let promiseImgUrl;
+                await UsPublic.unsplash.photos.getRandomPhoto({
+                    width: UsPublic.MAIN_WINDOW.width,
+                    height: UsPublic.MAIN_WINDOW.height
+                }).then(res => res.json()).then(json => {
+                    promiseImgUrl = {
+                        url: json.urls.custom,
+                        alt: json.alt_description,
+                    };
+                });
+                return promiseImgUrl;
+            },
+            downloadFile(url, path, name) {
+                // 根据url下载图片
+                UsPublic.request(url).on('response', (response) => {
+                    let size = parseInt(response.headers['content-length']);
+                    let num = 0;
+                    response.on('data', (chunk) => {
+                        num += chunk.length;
+                        this.$Loading.update(parseInt((num / size) * 100));
+                    })
+                    response.on('end', () => {
+                        if (!UsPublic.fs.existsSync(path)) {
+                            UsPublic.jmMkdir.sync(path);
+                        }
+                        this.us_loading.downloadImage = false;
+                        this.$Loading.finish();
+                        UsPublic.wallpaper.set(`${path}/${name}`);
+                    });
+                }).on('error', (err) => {
+                    console.log(err);
+                }).pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
+            },
+            copyImage(src, target) {
+                // 复制文件到指定目录
+                if (!UsPublic.fs.existsSync(target)) {
+                    UsPublic.jmMkdir.sync(target);
+                }
+                UsPublic.fs.readFile(src, function (err, data) {
+                    if (!err) {
+                        let date = new Date();
+                        let fileName = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}.${date.getMinutes()}.${date.getSeconds()}.${date.getMilliseconds()}.jpg`;
+                        UsPublic.fs.writeFile(`${target}/${fileName}`, data, function (err) {
+                            if (!err) {
+                                console.log("下载壁纸成功");
+                            }
+                        });
+                    }
+                });
+            },
         }
     }
 </script>

@@ -1,6 +1,6 @@
 'use strict';
 
-import {app, protocol, BrowserWindow,ipcMain,Tray,Menu} from 'electron'
+import {app, protocol, BrowserWindow, ipcMain, Tray, Menu} from 'electron'
 import {
     createProtocol,
     installVueDevtools
@@ -11,6 +11,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 // 保持对window对象的全局引用，如果不这么做的话，当JavaScript对象被
 // 垃圾回收的时候，window对象将会自动的关闭
 let win;
+let tray;
 
 // 必须在应用程序准备好之前注册Scheme
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
@@ -35,7 +36,7 @@ function createWindow() {
         // 如果处于开发模式，请加载开发服务器的URL
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) win.webContents.openDevTools();
-        win.setBounds({ width: 1500 });
+        win.setBounds({width: 1500});
     } else {
         createProtocol('app');
         // 不在开发中时加载index.html
@@ -104,7 +105,7 @@ if (isDevelopment) {
 }
 
 function createTray() {
-    let tray = new Tray('src/assets/icon.png');
+    tray = new Tray('./src/assets/icon.png');
     const contextMenu = Menu.buildFromTemplate([
         {label: '退出', type: 'normal', role: 'quit'},
     ]);
