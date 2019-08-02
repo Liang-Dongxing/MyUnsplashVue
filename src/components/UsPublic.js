@@ -76,9 +76,8 @@ let downloadFile = (url, path, name) => {
             if (!fs.existsSync(path)) {
                 jmMkdir.sync(path);
             }
-            console.log(response)
-            wallpaper.set(`${path}/${name}`);
             console.log("修改壁纸完成");
+            wallpaper.set(`${path}/${name}`);
         });
     }).on('error', (err) => {
         console.log(err);

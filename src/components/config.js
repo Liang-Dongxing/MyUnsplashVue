@@ -22,12 +22,11 @@ module.exports = {
         width: electron.screen.getPrimaryDisplay().size.width,
         height: electron.screen.getPrimaryDisplay().size.height,
     },
-    IMG_PATH: "temp\\images",
+    IMG_PATH: "temp/images",
     IMG_NAME: "TranscodedWallpaper.jpg",
     SAVE_PATH: savePath,
     ELECTRON: electron,
     IPC_RENDERER: ipcRenderer,
-    IPC_MAIN: electron.ipcMain,
     PROPERTIES: properties,
     PRO_FILE_PATH: proFilePath,
 };
