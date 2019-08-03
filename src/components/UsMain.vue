@@ -228,6 +228,9 @@
                 return promiseImgUrl;
             },
             downloadFile(url, path, name) {
+                if (!UsPublic.fs.existsSync(path)) {
+                    UsPublic.jmMkdir.sync(path);
+                }
                 // 根据url下载图片
                 UsPublic.request(url).on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
@@ -237,9 +240,6 @@
                         this.$Loading.update(parseInt((num / size) * 100));
                     })
                     response.on('end', () => {
-                        if (!UsPublic.fs.existsSync(path)) {
-                            UsPublic.jmMkdir.sync(path);
-                        }
                         this.us_loading.downloadImage = false;
                         this.$Loading.finish();
                         UsPublic.wallpaper.set(`${path}/${name}`);
