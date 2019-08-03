@@ -35,6 +35,11 @@
             </div>
             <div>
                 <Form v-bind:modal="us_form" label-position="top">
+                    <FormItem label="图片关键词（多个词用`,`隔开）">
+                        <Col span="24">
+                            <Input v-model="us_form.keyword" size="default"/>
+                        </Col>
+                    </FormItem>
                     <FormItem label="图片下载路径">
                         <Col span="21">
                             <Input v-model="us_form.path" size="default"/>
@@ -54,6 +59,11 @@
                             <Select v-model="us_form.replaceTimeOption" v-bind:disabled="us_form.disabled.replaceTimeOption">
                                 <Option v-for="item in us_form.timeOption" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
+                        </Col>
+                    </FormItem>
+                    <FormItem label="是否使用高清壁纸（8K，网速慢请关闭）">
+                        <Col span="3">
+                            <iSwitch v-model="us_form.replaceImgHD" size="default"/>
                         </Col>
                     </FormItem>
                 </Form>
@@ -89,10 +99,12 @@
                     downloadImage: false
                 },
                 us_form: {
+                    keyword: UsPublic.properties.get("replaceKeyword"),
                     path: UsPublic.SAVE_PATH,
                     replaceImg: UsPublic.properties.get("replaceImg"),
                     replaceTime: UsPublic.properties.get("replaceTime"),
                     replaceTimeOption: UsPublic.properties.get("replaceTimeOption"),
+                    replaceImgHD: UsPublic.properties.get("replaceImgHD"),
                     timeOption: [
                         {value: 's', label: '秒'},
                         {value: 'm', label: '分'},
@@ -168,6 +180,8 @@
                 } else {
                     UsPublic.properties.set("replaceImg", switchValue);
                 }
+                UsPublic.properties.set("replaceImgHD", this.us_form.replaceImgHD);
+                UsPublic.properties.set("replaceKeyword", this.us_form.keyword);
                 UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
                 this.us_timer();
                 this.us_modal = false;
@@ -202,8 +216,18 @@
             },
             updateWallpaper() {
                 // 更新壁纸
-                let src = this.getRandomImgBackground();
+                let src;
+                if (this.us_form.keyword.length > 0) {
+                    src = this.getKeywordImgBackground(this.us_form.keyword);
+                } else {
+                    src = this.getRandomImgBackground();
+                }
+                console.log(src)
                 this.downloadFile(src, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
+            },
+            getKeywordImgBackground(keyword) {
+                UsPublic.unsplashUrl.pathname = `${UsPublic.LOCAL_SCREEN.width}x${UsPublic.LOCAL_SCREEN.height}`;
+                return encodeURI(UsPublic.unsplashUrl.href + `/?${keyword}`);
             },
             getRandomImgBackground() {
                 // 随机获取图片
@@ -215,8 +239,7 @@
                     UsPublic.jmMkdir.sync(path);
                 }
                 // 根据url下载图片
-                this.us_request = UsPublic.request(url);
-                this.us_request.on('response', (response) => {
+                UsPublic.request(url).on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
                     let num = 0;
                     let ct = [];
@@ -234,8 +257,7 @@
                     });
                 }).on('error', (err) => {
                     console.log(err);
-                });
-                this.us_request.pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
+                }).pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
             },
             copyImage(src, target) {
                 // 复制文件到指定目录
@@ -299,5 +321,8 @@
 
     .ivu-form .ivu-col .ivu-btn {
         width: 100%;
+    }
+    .ivu-modal{
+        top: 45px;
     }
 </style>

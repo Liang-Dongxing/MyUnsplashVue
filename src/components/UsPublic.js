@@ -10,7 +10,15 @@ if (savePath == null || savePath.length === 0) {
     properties.set("savePath", savePath);
     properties.save(proFilePath);
 }
-
+let replaceImgHD = properties.get("replaceImgHD");
+let LOCAL_SCREEN = {};
+if (replaceImgHD) {
+    LOCAL_SCREEN.width = 7680;
+    LOCAL_SCREEN.height = 4320;
+} else {
+    LOCAL_SCREEN.width = electron.screen.getPrimaryDisplay().size.width;
+    LOCAL_SCREEN.height = electron.screen.getPrimaryDisplay().size.height;
+}
 // App工具包
 const request = require('request');
 const fs = require('fs');
@@ -23,10 +31,7 @@ export default {
         width: 960,
         height: 540
     },
-    LOCAL_SCREEN: {
-        width: electron.screen.getPrimaryDisplay().size.width,
-        height: electron.screen.getPrimaryDisplay().size.height,
-    },
+    LOCAL_SCREEN,
     IMG_PATH: "temp/images",
     IMG_NAME: "TranscodedWallpaper.jpg",
     SAVE_PATH: savePath,
