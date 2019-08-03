@@ -145,7 +145,6 @@
                 // this.$Spin.show();
                 this.us_disabled.downloadImage = true
                 // this.us_disabled.refreshImage = true;
-                this.us_request.abort();
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -240,6 +239,9 @@
                 return UsPublic.unsplashUrl.href;
             },
             downloadFile(url, path, name) {
+                if (this.us_request){
+                    this.us_request.abort();
+                }
                 this.$Loading.update(1);
                 if (!UsPublic.fs.existsSync(path)) {
                     UsPublic.jmMkdir.sync(path);
@@ -264,7 +266,7 @@
                             this.us_src = `data:image/jpeg;base64,${Buffer.concat(imgBuffer).toString("base64")}`;
                             setTimeout(() => {
                                 UsPublic.wallpaper.set(`${path}/${name}`);
-                            }, 100)
+                            }, 1000)
                         }
                     });
                 });
