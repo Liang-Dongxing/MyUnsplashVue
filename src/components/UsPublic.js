@@ -16,7 +16,7 @@ const request = require('request');
 const fs = require('fs');
 const wallpaper = require('wallpaper');
 const jmMkdir = require('jm-mkdirs');
-
+const URL = require('url');
 // Unsplash.js
 const Unsplash = require("unsplash-js").default;
 const unsplash = new Unsplash({
