@@ -28,7 +28,7 @@
                 </ButtonGroup>
             </Footer>
         </Layout>
-        <Modal v-model="us_modal">
+        <Modal v-model="us_modal" :styles="{top: '45px'}">
             <div slot="header" class="ivu-modal-header-inner">
                 <Icon type="md-settings"/>
                 设置
@@ -92,7 +92,7 @@
                 us_modal: false,
                 us_timer_id: 0,
                 us_disabled: {
-                    refreshImage: true,
+                    refreshImage: false,
                     downloadImage: true
                 },
                 us_loading: {
@@ -135,12 +135,12 @@
             us_imgLoad() {
                 // this.$Spin.hide();
                 this.us_disabled.downloadImage = false
-                this.us_disabled.refreshImage = false;
+                // this.us_disabled.refreshImage = false;
             },
             us_refreshImage() {
                 // this.$Spin.show();
                 this.us_disabled.downloadImage = true
-                this.us_disabled.refreshImage = true;
+                // this.us_disabled.refreshImage = true;
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -222,7 +222,6 @@
                 } else {
                     src = this.getRandomImgBackground();
                 }
-                console.log(src)
                 this.downloadFile(src, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
             },
             getKeywordImgBackground(keyword) {
@@ -239,7 +238,8 @@
                     UsPublic.jmMkdir.sync(path);
                 }
                 // 根据url下载图片
-                UsPublic.request(url).on('response', (response) => {
+                this.us_request = UsPublic.request(url);
+                this.us_request.on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
                     let num = 0;
                     let ct = [];
@@ -255,9 +255,11 @@
                         this.us_src = `data:image/jpeg;base64,${Buffer.concat(ct).toString("base64")}`;
                         UsPublic.wallpaper.set(`${path}/${name}`);
                     });
-                }).on('error', (err) => {
+                });
+                this.us_request.on('error', (err) => {
                     console.log(err);
-                }).pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
+                });
+                this.us_request.pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
             },
             copyImage(src, target) {
                 // 复制文件到指定目录
@@ -321,8 +323,5 @@
 
     .ivu-form .ivu-col .ivu-btn {
         width: 100%;
-    }
-    .ivu-modal{
-        top: 45px;
     }
 </style>
