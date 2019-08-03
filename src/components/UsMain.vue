@@ -107,7 +107,7 @@
             }
         },
         created() {
-            this.$Spin.show();
+            // this.$Spin.show();
             this.updateWallpaper();
             if (!this.us_form.replaceImg) {
                 this.us_form.disabled.replaceTime = true;
@@ -121,16 +121,15 @@
                 this.us_modal = true;
             },
             us_imgLoad() {
-                this.$Spin.hide();
+                // this.$Spin.hide();
                 this.us_disabled.downloadImage = false;
                 this.us_disabled.refreshImage = false;
             },
             us_refreshImage() {
-                this.$Spin.show();
+                // this.$Spin.show();
                 this.us_disabled.downloadImage = true;
                 this.us_disabled.refreshImage = true;
                 this.us_loading.downloadImage = true;
-                console.log(this.us_request)
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -204,30 +203,16 @@
             },
             updateWallpaper() {
                 // 更新壁纸
-                let promiseImgUrl = this.getRandomImgBackground();
-                promiseImgUrl.then(vkey => {
-                    this.us_src = vkey.url;
-                    this.us_alt = vkey.alt;
-
-                    let imgPathUrl = new URL(vkey.url);
-                    imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
-                    imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
-                    this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
-                });
+                let src = this.getRandomImgBackground();
+                this.downloadFile(src.wallpaper_src, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
             },
-            async getRandomImgBackground() {
+            getRandomImgBackground() {
                 // 随机获取图片
-                let promiseImgUrl;
-                await UsPublic.unsplash.photos.getRandomPhoto({
-                    width: UsPublic.MAIN_WINDOW.width,
-                    height: UsPublic.MAIN_WINDOW.height
-                }).then(res => res.json()).then(json => {
-                    promiseImgUrl = {
-                        url: json.urls.custom,
-                        alt: json.alt_description,
-                    };
-                });
-                return promiseImgUrl;
+                UsPublic.unsplashUrl.pathname = `random/${UsPublic.LOCAL_SCREEN.width}x${UsPublic.LOCAL_SCREEN.height}`;
+                let wallpaper_src = UsPublic.unsplashUrl.href;
+                return {
+                     wallpaper_src
+                };
             },
             downloadFile(url, path, name) {
                 if (!UsPublic.fs.existsSync(path)) {
@@ -238,14 +223,17 @@
                 this.us_request.on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
                     let num = 0;
+                    let ct=[];
                     response.on('data', (chunk) => {
+                        ct.push(chunk)
                         num += chunk.length;
-                        console.log(parseInt((num / size) * 100))
+                        // console.log(parseInt((num / size) * 100));
                         this.$Loading.update(parseInt((num / size) * 100));
                     })
                     response.on('end', () => {
                         this.us_loading.downloadImage = false;
                         this.$Loading.finish();
+                        this.us_src = `data:image/jpeg;base64,${Buffer.concat(ct).toString("base64")}`;
                         UsPublic.wallpaper.set(`${path}/${name}`);
                     });
                 }).on('error', (err) => {

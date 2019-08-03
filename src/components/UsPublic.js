@@ -2,7 +2,7 @@ const {ipcRenderer} = require("electron");
 const electron = require('electron').remote;
 const PropertiesReader = require('properties-reader');
 const path = require('path');
-const proFilePath = path.join(__static,'config.properties');
+const proFilePath = path.join(__static, 'config.properties');
 const properties = PropertiesReader(proFilePath);
 let savePath = properties.get("savePath");
 if (savePath == null || savePath.length === 0) {
@@ -16,14 +16,8 @@ const request = require('request');
 const fs = require('fs');
 const wallpaper = require('wallpaper');
 const jmMkdir = require('jm-mkdirs');
-const URL = require('url');
-// Unsplash.js
-const Unsplash = require("unsplash-js").default;
-const unsplash = new Unsplash({
-    applicationId: "a37610fe0232b739c6cbabb7389a77ef10de6d31f5c07a4c99ffc0d8b3af31b4",
-    secret: "b9d0e32cfb7b6d9b20def01b5edf320f008ffcb98a20c7240da780dfc5c6e82c",
-});
 
+const unsplashUrl = new URL("https://source.unsplash.com");
 export default {
     MAIN_WINDOW: {
         width: 960,
@@ -37,7 +31,7 @@ export default {
     IMG_NAME: "TranscodedWallpaper.jpg",
     SAVE_PATH: savePath,
     PRO_FILE_PATH: proFilePath,
-    unsplash,
+    unsplashUrl,
     request,
     wallpaper,
     fs,
