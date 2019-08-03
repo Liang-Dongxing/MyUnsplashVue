@@ -15,7 +15,7 @@
                             <Icon type="md-settings"/>
                         </Tooltip>
                     </Button>
-                    <Button type="primary" v-on:click="us_refreshImage" v-bind:disabled="us_disabled.refreshImage">
+                    <Button type="primary" v-on:click.stop="us_refreshImage" v-bind:disabled="us_disabled.refreshImage">
                         <Tooltip content="刷新壁纸" placement="top">
                             <Icon type="md-refresh"/>
                         </Tooltip>
@@ -120,7 +120,11 @@
         },
         created() {
             // this.$Spin.show();
-            this.updateWallpaper();
+            UsPublic.wallpaper.get().then((value) => {
+                let bf = UsPublic.fs.readFileSync(value);
+                this.us_src = `data:image/jpeg;base64,${bf.toString("base64")}`;
+                this.updateWallpaper();
+            });
             if (!this.us_form.replaceImg) {
                 this.us_form.disabled.replaceTime = true;
                 this.us_form.disabled.replaceTimeOption = true;
@@ -141,6 +145,7 @@
                 // this.$Spin.show();
                 this.us_disabled.downloadImage = true
                 // this.us_disabled.refreshImage = true;
+                this.us_request.abort();
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -185,6 +190,7 @@
                 UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
                 this.us_timer();
                 this.us_modal = false;
+                location.reload();
             },
             us_modal_cancel() {
                 this.us_modal = false;
@@ -234,30 +240,33 @@
                 return UsPublic.unsplashUrl.href;
             },
             downloadFile(url, path, name) {
+                this.$Loading.update(1);
                 if (!UsPublic.fs.existsSync(path)) {
                     UsPublic.jmMkdir.sync(path);
                 }
                 // 根据url下载图片
+                let imgBuffer = [];
                 this.us_request = UsPublic.request(url);
                 this.us_request.on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
                     let num = 0;
-                    let ct = [];
                     response.on('data', (chunk) => {
-                        ct.push(chunk)
+                        imgBuffer.push(chunk)
                         num += chunk.length;
                         // console.log(parseInt((num / size) * 100));
                         this.$Loading.update(parseInt((num / size) * 100));
                     })
-                    response.on('end', () => {
-                        this.us_loading.downloadImage = false;
-                        this.$Loading.finish();
-                        this.us_src = `data:image/jpeg;base64,${Buffer.concat(ct).toString("base64")}`;
-                        UsPublic.wallpaper.set(`${path}/${name}`);
+
+                    this.us_request.on('end', () => {
+                        if (num >= size) {
+                            this.us_loading.downloadImage = false;
+                            this.$Loading.finish();
+                            this.us_src = `data:image/jpeg;base64,${Buffer.concat(imgBuffer).toString("base64")}`;
+                            setTimeout(() => {
+                                UsPublic.wallpaper.set(`${path}/${name}`);
+                            }, 100)
+                        }
                     });
-                });
-                this.us_request.on('error', (err) => {
-                    console.log(err);
                 });
                 this.us_request.pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
             },
