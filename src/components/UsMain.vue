@@ -102,7 +102,8 @@
                         replaceTime: false,
                         replaceTimeOption: false
                     }
-                }
+                },
+                us_request: null
             }
         },
         created() {
@@ -129,6 +130,7 @@
                 this.us_disabled.downloadImage = true;
                 this.us_disabled.refreshImage = true;
                 this.us_loading.downloadImage = true;
+                console.log(this.us_request)
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -232,11 +234,13 @@
                     UsPublic.jmMkdir.sync(path);
                 }
                 // 根据url下载图片
-                UsPublic.request(url).on('response', (response) => {
+                this.us_request = UsPublic.request(url);
+                this.us_request.on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
                     let num = 0;
                     response.on('data', (chunk) => {
                         num += chunk.length;
+                        console.log(parseInt((num / size) * 100))
                         this.$Loading.update(parseInt((num / size) * 100));
                     })
                     response.on('end', () => {
@@ -246,7 +250,8 @@
                     });
                 }).on('error', (err) => {
                     console.log(err);
-                }).pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
+                });
+                this.us_request.pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
             },
             copyImage(src, target) {
                 // 复制文件到指定目录

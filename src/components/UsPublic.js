@@ -6,7 +6,7 @@ const proFilePath = path.join(__static,'config.properties');
 const properties = PropertiesReader(proFilePath);
 let savePath = properties.get("savePath");
 if (savePath == null || savePath.length === 0) {
-    savePath = require('path').join(require('os').homedir(), 'Desktop');
+    savePath = require('path').join(require('os').homedir(), 'Desktop').replace(/\\/g, "/");
     properties.set("savePath", savePath);
     properties.save(proFilePath);
 }
