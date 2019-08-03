@@ -11,7 +11,7 @@
             <Footer>
                 <ButtonGroup size="small" shape="circle">
                     <Button type="primary" v-on:click="us_setting">
-                        <Tooltip content="下载壁纸" placement="top-start">
+                        <Tooltip content="设置" placement="top-start">
                             <Icon type="md-settings"/>
                         </Tooltip>
                     </Button>
