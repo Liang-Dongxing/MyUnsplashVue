@@ -86,7 +86,7 @@
                     downloadImage: true
                 },
                 us_loading: {
-                    downloadImage: true
+                    downloadImage: false
                 },
                 us_form: {
                     path: UsPublic.SAVE_PATH,
@@ -122,14 +122,13 @@
             },
             us_imgLoad() {
                 // this.$Spin.hide();
-                this.us_disabled.downloadImage = false;
+                this.us_disabled.downloadImage = false
                 this.us_disabled.refreshImage = false;
             },
             us_refreshImage() {
                 // this.$Spin.show();
-                this.us_disabled.downloadImage = true;
+                this.us_disabled.downloadImage = true
                 this.us_disabled.refreshImage = true;
-                this.us_loading.downloadImage = true;
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -204,15 +203,12 @@
             updateWallpaper() {
                 // 更新壁纸
                 let src = this.getRandomImgBackground();
-                this.downloadFile(src.wallpaper_src, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
+                this.downloadFile(src, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
             },
             getRandomImgBackground() {
                 // 随机获取图片
                 UsPublic.unsplashUrl.pathname = `random/${UsPublic.LOCAL_SCREEN.width}x${UsPublic.LOCAL_SCREEN.height}`;
-                let wallpaper_src = UsPublic.unsplashUrl.href;
-                return {
-                     wallpaper_src
-                };
+                return UsPublic.unsplashUrl.href;
             },
             downloadFile(url, path, name) {
                 if (!UsPublic.fs.existsSync(path)) {
@@ -223,7 +219,7 @@
                 this.us_request.on('response', (response) => {
                     let size = parseInt(response.headers['content-length']);
                     let num = 0;
-                    let ct=[];
+                    let ct = [];
                     response.on('data', (chunk) => {
                         ct.push(chunk)
                         num += chunk.length;
