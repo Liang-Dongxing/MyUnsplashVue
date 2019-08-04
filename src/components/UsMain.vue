@@ -15,7 +15,7 @@
                             <Icon type="md-settings"/>
                         </Tooltip>
                     </Button>
-                    <Button type="primary" v-on:click="us_refreshImage" v-bind:disabled="us_disabled.refreshImage">
+                    <Button type="primary" v-on:click.stop="us_refreshImage" v-bind:disabled="us_disabled.refreshImage">
                         <Tooltip content="刷新壁纸" placement="top">
                             <Icon type="md-refresh"/>
                         </Tooltip>
@@ -28,13 +28,18 @@
                 </ButtonGroup>
             </Footer>
         </Layout>
-        <Modal v-model="us_modal">
+        <Modal v-model="us_modal" :styles="{top: '45px'}">
             <div slot="header" class="ivu-modal-header-inner">
                 <Icon type="md-settings"/>
                 设置
             </div>
             <div>
                 <Form v-bind:modal="us_form" label-position="top">
+                    <FormItem label="图片关键词（多个词用`,`隔开）">
+                        <Col span="24">
+                            <Input v-model="us_form.keyword" size="default"/>
+                        </Col>
+                    </FormItem>
                     <FormItem label="图片下载路径">
                         <Col span="21">
                             <Input v-model="us_form.path" size="default"/>
@@ -54,6 +59,11 @@
                             <Select v-model="us_form.replaceTimeOption" v-bind:disabled="us_form.disabled.replaceTimeOption">
                                 <Option v-for="item in us_form.timeOption" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
+                        </Col>
+                    </FormItem>
+                    <FormItem label="是否使用高清壁纸（8K，网速慢请关闭）">
+                        <Col span="3">
+                            <iSwitch v-model="us_form.replaceImgHD" size="default"/>
                         </Col>
                     </FormItem>
                 </Form>
@@ -86,13 +96,15 @@
                     downloadImage: true
                 },
                 us_loading: {
-                    downloadImage: true
+                    downloadImage: false
                 },
                 us_form: {
+                    keyword: UsPublic.properties.get("replaceKeyword"),
                     path: UsPublic.SAVE_PATH,
                     replaceImg: UsPublic.properties.get("replaceImg"),
                     replaceTime: UsPublic.properties.get("replaceTime"),
                     replaceTimeOption: UsPublic.properties.get("replaceTimeOption"),
+                    replaceImgHD: UsPublic.properties.get("replaceImgHD"),
                     timeOption: [
                         {value: 's', label: '秒'},
                         {value: 'm', label: '分'},
@@ -107,7 +119,7 @@
             }
         },
         created() {
-            this.$Spin.show();
+            // this.$Spin.show();
             this.updateWallpaper();
             if (!this.us_form.replaceImg) {
                 this.us_form.disabled.replaceTime = true;
@@ -121,16 +133,15 @@
                 this.us_modal = true;
             },
             us_imgLoad() {
-                this.$Spin.hide();
-                this.us_disabled.downloadImage = false;
+                // this.$Spin.hide();
+                // this.us_disabled.downloadImage = false;
                 this.us_disabled.refreshImage = false;
             },
             us_refreshImage() {
-                this.$Spin.show();
+                // this.$Spin.show();
                 this.us_disabled.downloadImage = true;
                 this.us_disabled.refreshImage = true;
-                this.us_loading.downloadImage = true;
-                console.log(this.us_request)
+                // this.us_loading.downloadImage = true;
                 this.updateWallpaper();
             },
             us_downloadImage() {
@@ -170,9 +181,12 @@
                 } else {
                     UsPublic.properties.set("replaceImg", switchValue);
                 }
+                UsPublic.properties.set("replaceImgHD", this.us_form.replaceImgHD);
+                UsPublic.properties.set("replaceKeyword", this.us_form.keyword);
                 UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
                 this.us_timer();
                 this.us_modal = false;
+                location.reload();
             },
             us_modal_cancel() {
                 this.us_modal = false;
@@ -204,16 +218,30 @@
             },
             updateWallpaper() {
                 // 更新壁纸
-                let promiseImgUrl = this.getRandomImgBackground();
-                promiseImgUrl.then(vkey => {
-                    this.us_src = vkey.url;
-                    this.us_alt = vkey.alt;
+                if (this.us_form.keyword.length > 0) {
+                    this.getKeywordImgBackground();
+                } else {
+                    let promiseImgUrl = this.getRandomImgBackground();
+                    promiseImgUrl.then(vkey => {
+                        this.us_src = vkey.url;
+                        this.us_alt = vkey.alt;
 
-                    let imgPathUrl = new URL(vkey.url);
-                    imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
-                    imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
-                    this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
-                });
+                        let imgPathUrl = new URL(vkey.url);
+                        imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
+                        imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
+                        this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
+                    });
+                }
+
+            },
+            async getKeywordImgBackground() {
+                // 随机获取图片
+                UsPublic.unsplash.photos.getPhoto("mtNweauBsMQ")
+                    .then(toJson)
+                    .then(json => {
+                        UsPublic.unsplash.photos.downloadPhoto(json);
+                    });
+
             },
             async getRandomImgBackground() {
                 // 随机获取图片
@@ -230,6 +258,11 @@
                 return promiseImgUrl;
             },
             downloadFile(url, path, name) {
+                if (this.us_request) {
+                    console.log("销毁")
+                    this.us_request.abort();
+                }
+                this.$Loading.update(1);
                 if (!UsPublic.fs.existsSync(path)) {
                     UsPublic.jmMkdir.sync(path);
                 }
@@ -240,13 +273,18 @@
                     let num = 0;
                     response.on('data', (chunk) => {
                         num += chunk.length;
-                        console.log(parseInt((num / size) * 100))
-                        this.$Loading.update(parseInt((num / size) * 100));
+                        let status = parseInt((num / size) * 100)+1;
+                        console.log(status)
+                        this.$Loading.update(status);
                     })
                     response.on('end', () => {
-                        this.us_loading.downloadImage = false;
-                        this.$Loading.finish();
-                        UsPublic.wallpaper.set(`${path}/${name}`);
+                        if (num >= size) {
+                            this.us_disabled.downloadImage = false;
+                            this.$Loading.finish();
+                            setTimeout(() => {
+                                UsPublic.wallpaper.set(`${path}/${name}`);
+                            }, 1000);
+                        }
                     });
                 }).on('error', (err) => {
                     console.log(err);
