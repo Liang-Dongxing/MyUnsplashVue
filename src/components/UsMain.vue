@@ -28,12 +28,12 @@
                 </ButtonGroup>
             </Footer>
         </Layout>
-        <Modal v-model="us_modal" :styles="{top: '45px'}">
+        <Modal v-model="us_modal" :styles="{top: '45px',height: '450px'}">
             <div slot="header" class="ivu-modal-header-inner">
                 <Icon type="md-settings"/>
                 设置
             </div>
-            <div>
+            <div style="overflow: hidden;height: 310px">
                 <Form v-bind:modal="us_form" label-position="top">
                     <FormItem label="图片关键词（多个词用`,`隔开）">
                         <Col span="24">
@@ -61,9 +61,20 @@
                             </Select>
                         </Col>
                     </FormItem>
-                    <FormItem label="是否使用高清壁纸（8K，网速慢请关闭）">
-                        <Col span="3">
-                            <iSwitch v-model="us_form.replaceImgHD" size="default"/>
+                    <FormItem>
+                        <Col span="12">
+                            <FormItem label="是否使用高清壁纸（8K，网速慢请关闭）">
+                                <Col span="24">
+                                    <iSwitch v-model="us_form.replaceImgHD" size="default"/>
+                                </Col>
+                            </FormItem>
+                        </Col>
+                        <Col span="12">
+                            <FormItem label="是否使用精选壁纸">
+                                <Col span="24">
+                                    <iSwitch v-model="us_form.featured" size="default"/>
+                                </Col>
+                            </FormItem>
                         </Col>
                     </FormItem>
                 </Form>
@@ -100,6 +111,7 @@
                 },
                 us_form: {
                     keyword: UsPublic.properties.get("replaceKeyword"),
+                    featured: UsPublic.properties.get("replaceFeatured"),
                     path: UsPublic.SAVE_PATH,
                     replaceImg: UsPublic.properties.get("replaceImg"),
                     replaceTime: UsPublic.properties.get("replaceTime"),
@@ -183,6 +195,7 @@
                 }
                 UsPublic.properties.set("replaceImgHD", this.us_form.replaceImgHD);
                 UsPublic.properties.set("replaceKeyword", this.us_form.keyword);
+                UsPublic.properties.set("replaceFeatured", this.us_form.keyword);
                 UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
                 this.us_timer();
                 this.us_modal = false;
@@ -218,29 +231,16 @@
             },
             updateWallpaper() {
                 // 更新壁纸
-                if (this.us_form.keyword.length > 0) {
-                    this.getKeywordImgBackground();
-                } else {
-                    let promiseImgUrl = this.getRandomImgBackground();
-                    promiseImgUrl.then(vkey => {
-                        this.us_src = vkey.url;
-                        this.us_alt = vkey.alt;
+                let promiseImgUrl = this.getRandomImgBackground();
+                promiseImgUrl.then(vkey => {
+                    this.us_src = vkey.url;
+                    this.us_alt = vkey.alt;
 
-                        let imgPathUrl = new URL(vkey.url);
-                        imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
-                        imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
-                        this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
-                    });
-                }
-
-            },
-            async getKeywordImgBackground() {
-                // 随机获取图片
-                UsPublic.unsplash.photos.getPhoto("mtNweauBsMQ")
-                    .then(toJson)
-                    .then(json => {
-                        UsPublic.unsplash.photos.downloadPhoto(json);
-                    });
+                    let imgPathUrl = new URL(vkey.url);
+                    imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
+                    imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
+                    this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
+                });
 
             },
             async getRandomImgBackground() {
@@ -248,7 +248,9 @@
                 let promiseImgUrl;
                 await UsPublic.unsplash.photos.getRandomPhoto({
                     width: UsPublic.MAIN_WINDOW.width,
-                    height: UsPublic.MAIN_WINDOW.height
+                    height: UsPublic.MAIN_WINDOW.height,
+                    query: this.us_form.keyword,
+                    featured: this.us_form.featured,
                 }).then(res => res.json()).then(json => {
                     promiseImgUrl = {
                         url: json.urls.custom,
@@ -273,7 +275,7 @@
                     let num = 0;
                     response.on('data', (chunk) => {
                         num += chunk.length;
-                        let status = parseInt((num / size) * 100)+1;
+                        let status = parseInt((num / size) * 100) + 1;
                         console.log(status)
                         this.$Loading.update(status);
                     })
