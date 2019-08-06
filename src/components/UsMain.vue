@@ -195,7 +195,7 @@
                 }
                 UsPublic.properties.set("replaceImgHD", this.us_form.replaceImgHD);
                 UsPublic.properties.set("replaceKeyword", this.us_form.keyword);
-                UsPublic.properties.set("replaceFeatured", this.us_form.keyword);
+                UsPublic.properties.set("replaceFeatured", this.us_form.featured);
                 UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
                 this.us_timer();
                 this.us_modal = false;
