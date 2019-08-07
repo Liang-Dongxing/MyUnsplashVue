@@ -265,7 +265,6 @@
                     // console.log("销毁")
                     this.us_request.abort();
                 }
-                this.$Loading.update(1);
                 if (!UsPublic.fs.existsSync(path)) {
                     UsPublic.jmMkdir.sync(path);
                 }
@@ -276,7 +275,7 @@
                     let num = 0;
                     response.on('data', (chunk) => {
                         num += chunk.length;
-                        let status = parseInt((num / size) * 100) + 1;
+                        let status = parseInt((num / size) * 100);
                         // console.log(status)
                         this.$Loading.update(status);
                     })
