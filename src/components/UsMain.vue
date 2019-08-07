@@ -3,7 +3,7 @@
         <img class="us_image" v-bind:src="us_src" v-bind:alt="us_alt" v-on:load="us_imgLoad">
         <Layout>
             <Header>
-                <Button class="us_close" type="error" v-on:click="us_close" size="small">
+                <Button class="us_close" type="error" v-on:click="us_close" size="small" ghost>
                     <Icon type="md-close"/>
                 </Button>
             </Header>
