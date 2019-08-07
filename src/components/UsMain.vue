@@ -233,27 +233,28 @@
                 // 更新壁纸
                 let promiseImgUrl = this.getRandomImgBackground();
                 promiseImgUrl.then(vkey => {
-                    this.us_src = vkey.url;
                     this.us_alt = vkey.alt;
-
                     let imgPathUrl = new URL(vkey.url);
+                    imgPathUrl.searchParams.set("fit", "crop");
+                    imgPathUrl.searchParams.set("crop", "faces,entropy,edges");
+                    imgPathUrl.searchParams.set("w", UsPublic.MAIN_WINDOW.width);
+                    imgPathUrl.searchParams.set("h", UsPublic.MAIN_WINDOW.height);
+                    this.us_src = imgPathUrl.href;
                     imgPathUrl.searchParams.set("w", UsPublic.LOCAL_SCREEN.width);
                     imgPathUrl.searchParams.set("h", UsPublic.LOCAL_SCREEN.height);
                     this.downloadFile(imgPathUrl.href, UsPublic.IMG_PATH, UsPublic.IMG_NAME);
                 });
-
             },
             async getRandomImgBackground() {
                 // 随机获取图片
                 let promiseImgUrl;
                 await UsPublic.unsplash.photos.getRandomPhoto({
-                    width: UsPublic.MAIN_WINDOW.width,
-                    height: UsPublic.MAIN_WINDOW.height,
                     query: this.us_form.keyword,
                     featured: this.us_form.featured,
                 }).then(res => res.json()).then(json => {
+                    // console.log(json);
                     promiseImgUrl = {
-                        url: json.urls.custom,
+                        url: json.urls.raw,
                         alt: json.alt_description,
                     };
                 });
@@ -261,7 +262,7 @@
             },
             downloadFile(url, path, name) {
                 if (this.us_request) {
-                    console.log("销毁")
+                    // console.log("销毁")
                     this.us_request.abort();
                 }
                 this.$Loading.update(1);
@@ -276,7 +277,7 @@
                     response.on('data', (chunk) => {
                         num += chunk.length;
                         let status = parseInt((num / size) * 100) + 1;
-                        console.log(status)
+                        // console.log(status)
                         this.$Loading.update(status);
                     })
                     response.on('end', () => {
