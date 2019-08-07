@@ -290,7 +290,8 @@
                         }
                     });
                 }).on('error', (err) => {
-                    console.log(err);
+                    this.$Loading.error();
+                    // console.log(err);
                 });
                 this.us_request.pipe(UsPublic.fs.createWriteStream(`${path}/${name}`));
             },
