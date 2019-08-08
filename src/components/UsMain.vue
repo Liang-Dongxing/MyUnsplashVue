@@ -11,7 +11,7 @@
             <Footer>
                 <ButtonGroup size="small" shape="circle">
                     <Button type="primary" v-on:click="us_setting">
-                        <Tooltip content="下载壁纸" placement="top-start">
+                        <Tooltip content="设置" placement="top-start">
                             <Icon type="md-settings"/>
                         </Tooltip>
                     </Button>
@@ -61,20 +61,9 @@
                             </Select>
                         </Col>
                     </FormItem>
-                    <FormItem>
-                        <Col span="12">
-                            <FormItem label="是否使用高清壁纸（8K，网速慢请关闭）">
-                                <Col span="24">
-                                    <iSwitch v-model="us_form.replaceImgHD" size="default"/>
-                                </Col>
-                            </FormItem>
-                        </Col>
-                        <Col span="12">
-                            <FormItem label="是否使用精选壁纸">
-                                <Col span="24">
-                                    <iSwitch v-model="us_form.featured" size="default"/>
-                                </Col>
-                            </FormItem>
+                    <FormItem label="是否使用精选壁纸">
+                        <Col span="24">
+                            <iSwitch v-model="us_form.featured" size="default"/>
                         </Col>
                     </FormItem>
                 </Form>
@@ -116,7 +105,6 @@
                     replaceImg: UsPublic.properties.get("replaceImg"),
                     replaceTime: UsPublic.properties.get("replaceTime"),
                     replaceTimeOption: UsPublic.properties.get("replaceTimeOption"),
-                    replaceImgHD: UsPublic.properties.get("replaceImgHD"),
                     timeOption: [
                         {value: 's', label: '秒'},
                         {value: 'm', label: '分'},
@@ -162,7 +150,7 @@
             },
             us_imageSavePath() {
                 // 图片保存路径获取对话框
-                let path = UsPublic.electron.dialog.showOpenDialog({properties: ['openDirectory']});
+                let path = UsPublic.electron_dialog.showOpenDialog({properties: ['openDirectory']});
                 path.then(value => {
                     if (value.filePaths.length > 0) {
                         this.us_form.path = value.filePaths[0].replace(/\\/g, "/");
@@ -193,7 +181,6 @@
                 } else {
                     UsPublic.properties.set("replaceImg", switchValue);
                 }
-                UsPublic.properties.set("replaceImgHD", this.us_form.replaceImgHD);
                 UsPublic.properties.set("replaceKeyword", this.us_form.keyword);
                 UsPublic.properties.set("replaceFeatured", this.us_form.featured);
                 UsPublic.properties.save(UsPublic.PRO_FILE_PATH);
@@ -206,7 +193,7 @@
             },
             us_close() {
                 // 根据渲染线程和主线程通信隐藏窗口
-                UsPublic.ipcRenderer.sendSync('win-message', true);
+                UsPublic.electron_ipcRenderer.sendSync('win-message', true);
             },
             us_timer() {
                 // 根据配置文件生成定时任务

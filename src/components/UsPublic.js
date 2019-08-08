@@ -1,8 +1,8 @@
 const {ipcRenderer} = require("electron");
-const electron = require('electron').remote;
+const {dialog, screen} = require('electron').remote;
 const PropertiesReader = require('properties-reader');
 const path = require('path');
-const proFilePath = path.join(__static,'config.properties');
+const proFilePath = path.join(__static, 'config.properties');
 const properties = PropertiesReader(proFilePath);
 let savePath = properties.get("savePath");
 if (savePath == null || savePath.length === 0) {
@@ -10,26 +10,27 @@ if (savePath == null || savePath.length === 0) {
     properties.set("savePath", savePath);
     properties.save(proFilePath);
 }
-let replaceImgHD = properties.get("replaceImgHD");
-let LOCAL_SCREEN = {};
-if (replaceImgHD) {
-    LOCAL_SCREEN.width = 7680;
-    LOCAL_SCREEN.height = 4320;
-} else {
-    LOCAL_SCREEN.width = electron.screen.getPrimaryDisplay().size.width;
-    LOCAL_SCREEN.height = electron.screen.getPrimaryDisplay().size.height;
+let localScreenWidth = properties.get("localScreenWidth");
+let localScreenHeight = properties.get("localScreenHeight");
+if ((localScreenWidth == null || localScreenWidth.length === 0) || (localScreenHeight == null || localScreenHeight.length === 0)) {
+    localScreenWidth = screen.getPrimaryDisplay().size.width;
+    localScreenHeight = screen.getPrimaryDisplay().size.height;
+    properties.set("localScreenWidth", localScreenWidth);
+    properties.set("localScreenHeight", localScreenHeight);
+    properties.save(proFilePath);
 }
 // App工具包
 const request = require('request');
 const fs = require('fs');
 const wallpaper = require('wallpaper');
 const jmMkdir = require('jm-mkdirs');
+const Base64 = require('js-base64').Base64;
 
 // Unsplash.js
 const Unsplash = require("unsplash-js").default;
 const unsplash = new Unsplash({
-    applicationId: "a37610fe0232b739c6cbabb7389a77ef10de6d31f5c07a4c99ffc0d8b3af31b4",
-    secret: "b9d0e32cfb7b6d9b20def01b5edf320f008ffcb98a20c7240da780dfc5c6e82c",
+    applicationId: Base64.decode("YTM3NjEwZmUwMjMyYjczOWM2Y2JhYmI3Mzg5YTc3ZWYxMGRlNmQzMWY1YzA3YTRjOTlmZmMwZDhiM2FmMzFiNA=="),
+    secret: Base64.decode("YjlkMGUzMmNmYjdiNmQ5YjIwZGVmMDFiNWVkZjMyMGYwMDhmZmNiOThhMjBjNzI0MGRhNzgwZGZjNWM2ZTgyYw=="),
 });
 
 export default {
@@ -37,7 +38,10 @@ export default {
         width: 960,
         height: 540
     },
-    LOCAL_SCREEN,
+    LOCAL_SCREEN: {
+        width: localScreenWidth,
+        height: localScreenHeight
+    },
     IMG_PATH: "temp/images",
     IMG_NAME: "TranscodedWallpaper.jpg",
     SAVE_PATH: savePath,
@@ -48,6 +52,6 @@ export default {
     fs,
     jmMkdir,
     properties,
-    ipcRenderer,
-    electron
+    electron_ipcRenderer: ipcRenderer,
+    electron_dialog: dialog
 };
