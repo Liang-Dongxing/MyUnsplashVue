@@ -29,8 +29,8 @@ const Base64 = require('js-base64').Base64;
 // Unsplash.js
 const Unsplash = require("unsplash-js").default;
 const unsplash = new Unsplash({
-    applicationId: Base64.decode("YTM3NjEwZmUwMjMyYjczOWM2Y2JhYmI3Mzg5YTc3ZWYxMGRlNmQzMWY1YzA3YTRjOTlmZmMwZDhiM2FmMzFiNA=="),
-    secret: Base64.decode("YjlkMGUzMmNmYjdiNmQ5YjIwZGVmMDFiNWVkZjMyMGYwMDhmZmNiOThhMjBjNzI0MGRhNzgwZGZjNWM2ZTgyYw=="),
+    applicationId: Base64.decode("MWE5ZGVlZDMyNGNjZWQ0MzZlNTQwOGZjNTBjYTI5OTYzMGQ4OWRkMzg1NzBmNmRiNzY5YTYxMjI1MzRkMTk5YQ=="),
+    secret: Base64.decode("NDAyOTlmOTg4ODQ1OTJlMmY5ZmQzZWEwYTdjNWE1MjE2MjY0ZTEyNzZiMzg0MzZhNzFlNzM0ZTJhNDQzMGEzMg=="),
 });
 
 export default {
