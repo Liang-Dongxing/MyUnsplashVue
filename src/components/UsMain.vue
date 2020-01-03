@@ -263,7 +263,7 @@
                     response.on('data', (chunk) => {
                         num += chunk.length;
                         let status = parseInt((num / size) * 100);
-                        // console.log(status)
+                        console.log(status)
                         this.$Loading.update(status);
                     })
                     response.on('end', () => {
