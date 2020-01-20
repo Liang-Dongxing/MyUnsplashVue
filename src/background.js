@@ -17,6 +17,44 @@ let tray;
 // 必须在应用程序准备好之前注册Scheme
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
 
+const gotTheLock = app.requestSingleInstanceLock()
+if (gotTheLock) {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        // 当运行第二个实例时,将会聚焦到myWindow这个窗口
+        if (win) {
+            if (win.isMinimized()) win.restore()
+            win.focus();
+            win.show();
+        }
+    });
+
+    // Electron 会在初始化后并准备
+    // 创建浏览器窗口时，调用这个函数。
+    // 部分 API 在 ready 事件触发后才能使用。
+    app.on('ready', async () => {
+        if (isDevelopment && !process.env.IS_TEST) {
+            // 安装Vue Devtools
+            try {
+                await installVueDevtools();
+            } catch (e) {
+                console.error('Vue Devtools failed to install:', e.toString());
+            }
+        }
+        createWindow();
+        createTray();
+        ipcMain.on('win-message', (event, arg) => {
+            if (arg) {
+                win.hide();
+                event.returnValue = true;
+            } else {
+                event.returnValue = false;
+            }
+        });
+    });
+} else {
+    app.quit();
+}
+
 function createWindow() {
     // 创建浏览器窗口。
     win = new BrowserWindow({
@@ -26,7 +64,7 @@ function createWindow() {
         resizable: false,// 禁止改变窗口大小
         frame: false,// 无边框
         transparent: false,
-        icon: path.join(__static,'icon.png'),
+        icon: path.join(__static, 'icon.png'),
         titleBarStyle: 'hidden',
         webPreferences: {
             nodeIntegration: true
@@ -65,29 +103,6 @@ app.on('activate', () => {
     }
 });
 
-// Electron 会在初始化后并准备
-// 创建浏览器窗口时，调用这个函数。
-// 部分 API 在 ready 事件触发后才能使用。
-app.on('ready', async () => {
-    if (isDevelopment && !process.env.IS_TEST) {
-        // 安装Vue Devtools
-        try {
-            await installVueDevtools();
-        } catch (e) {
-            console.error('Vue Devtools failed to install:', e.toString());
-        }
-    }
-    createWindow();
-    createTray();
-    ipcMain.on('win-message', (event, arg) => {
-        if (arg) {
-            win.hide();
-            event.returnValue = true;
-        } else {
-            event.returnValue = false;
-        }
-    });
-});
 
 // 在开发模式下根据父进程的请求干净地退出。
 if (isDevelopment) {
@@ -105,7 +120,7 @@ if (isDevelopment) {
 }
 
 function createTray() {
-    tray = new Tray(path.join(__static,'icon.png'));
+    tray = new Tray(path.join(__static, 'icon.png'));
     const contextMenu = Menu.buildFromTemplate([
         {label: '退出', type: 'normal', role: 'quit'},
     ]);
